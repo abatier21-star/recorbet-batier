@@ -34,6 +34,37 @@ jobs:
           test -f RECORBET_BATIER_V2/settings.gradle.kts
           test -f RECORBET_BATIER_V2/app/build.gradle.kts
 
+      - name: Corriger Java et Kotlin en JVM 17
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          p = Path("RECORBET_BATIER_V2/app/build.gradle.kts")
+          s = p.read_text()
+
+          if "sourceCompatibility = JavaVersion.VERSION_17" not in s:
+              s = s.replace(
+                  "android {",
+                  """android {
+              compileOptions {
+                  sourceCompatibility = JavaVersion.VERSION_17
+                  targetCompatibility = JavaVersion.VERSION_17
+              }
+          """,
+                  1
+              )
+
+          if "jvmToolchain(17)" not in s:
+              s += """
+
+          kotlin {
+              jvmToolchain(17)
+          }
+          """
+
+          p.write_text(s)
+          PY
+
       - name: Construire l'APK
         run: |
           cd RECORBET_BATIER_V2
