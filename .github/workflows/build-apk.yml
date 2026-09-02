@@ -8,7 +8,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Télécharger le dépôt
+      - name: Récupérer le dépôt
         uses: actions/checkout@v4
 
       - name: Installer Java 17
@@ -20,24 +20,28 @@ jobs:
       - name: Installer Android SDK
         uses: android-actions/setup-android@v3
 
+      - name: Installer le SDK Android 35
+        run: sdkmanager "platforms;android-35" "build-tools;35.0.0"
+
       - name: Installer Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
-          gradle-version: '8.7'
+          gradle-version: '8.11.1'
 
       - name: Extraire le projet Android
         run: |
           unzip -q RECORBET_BATIER_V2_TELEPHONE.zip
-          cd RECORBET_BATIER_V2
-          echo "Projet Android extrait"
+          test -f RECORBET_BATIER_V2/settings.gradle.kts
+          test -f RECORBET_BATIER_V2/app/build.gradle.kts
 
       - name: Construire l'APK
         run: |
           cd RECORBET_BATIER_V2
-          gradle assembleDebug --no-daemon
+          gradle :app:assembleDebug --no-daemon
 
-      - name: Récupérer l'APK
+      - name: Publier l'APK
         uses: actions/upload-artifact@v4
         with:
           name: RECORBET-BATIER-V2-APK
           path: RECORBET_BATIER_V2/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
